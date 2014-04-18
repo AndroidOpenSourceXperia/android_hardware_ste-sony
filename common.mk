@@ -22,6 +22,7 @@ PRODUCT_PACKAGES += \
 
 # External
 PRODUCT_PACKAGES += \
-   libhealthd
+   libhealthd \
+   libmemtrack
 
 
