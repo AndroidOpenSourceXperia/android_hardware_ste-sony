@@ -18,10 +18,11 @@
 #
 # lib_net_iface_cmd
 #
+LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
-SRC := network/bcmdhd_net_iface
+
 LOCAL_SRC_FILES := \
-    ${SRC}/bcmdhd_net_iface.c
+    bcmdhd_net_iface.c
 LOCAL_MODULE := libnetcmdiface
 LOCAL_CFLAGS := -mabi=aapcs-linux
 LOCAL_MODULE_TAGS := optional
