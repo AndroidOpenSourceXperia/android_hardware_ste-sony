@@ -1,39 +1,39 @@
 # iw
 #
+LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
-SRC := network/iw_util
 NO_PKG_CONFIG=y
 LOCAL_SRC_FILES := \
-    ${SRC}/bitrate.c \
-    ${SRC}/coalesce.c \
-    ${SRC}/connect.c \
-    ${SRC}/cqm.c \
-    ${SRC}/event.c \
-    ${SRC}/genl.c \
-    ${SRC}/hwsim.c \
-    ${SRC}/ibss.c \
-    ${SRC}/info.c \
-    ${SRC}/interface.c \
-    ${SRC}/iw.c \
-    ${SRC}/link.c \
-    ${SRC}/mesh.c \
-    ${SRC}/mpath.c \
-    ${SRC}/offch.c \
-    ${SRC}/p2p.c \
-    ${SRC}/phy.c \
-    ${SRC}/ps.c \
-    ${SRC}/reason.c \
-    ${SRC}/reg.c \
-    ${SRC}/roc.c \
-    ${SRC}/scan.c \
-    ${SRC}/sections.c \
-    ${SRC}/station.c \
-    ${SRC}/status.c \
-    ${SRC}/survey.c \
-    ${SRC}/util.c \
-    ${SRC}/wowlan.c \
-    ${SRC}/version.c \
-    ${SRC}/android-nl.c
+    bitrate.c \
+    coalesce.c \
+    connect.c \
+    cqm.c \
+    event.c \
+    genl.c \
+    hwsim.c \
+    ibss.c \
+    info.c \
+    interface.c \
+    iw.c \
+    link.c \
+    mesh.c \
+    mpath.c \
+    offch.c \
+    p2p.c \
+    phy.c \
+    ps.c \
+    reason.c \
+    reg.c \
+    roc.c \
+    scan.c \
+    sections.c \
+    station.c \
+    status.c \
+    survey.c \
+    util.c \
+    wowlan.c \
+    version.c \
+    android-nl.c
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/wifi/iw_util \
