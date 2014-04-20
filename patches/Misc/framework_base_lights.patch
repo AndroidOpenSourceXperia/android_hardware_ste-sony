@@ -209,7 +209,7 @@ index da9548f..90949af 100644
 +            }
 +        }
 +    }
-+ 
++
      @Override // Binder call
      public void wakeUp(long eventTime) {
          if (eventTime > SystemClock.uptimeMillis()) {
@@ -248,7 +248,7 @@ index da9548f..90949af 100644
          // Do nothing.
          // Button lights are not currently supported in the new implementation.
          mContext.enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER, null);
-+ 
++
 +        final long ident = Binder.clearCallingIdentity();
 +        try {
 +            setButtonBrightnessOverrideFromWindowManagerInternal(brightness);
