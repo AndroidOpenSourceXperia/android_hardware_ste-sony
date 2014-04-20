@@ -122,34 +122,6 @@ index 4c22412..270a92d 100644
      static status_t startInput(audio_io_handle_t input);
      static status_t stopInput(audio_io_handle_t input);
      static void releaseInput(audio_io_handle_t input);
-@@ -285,6 +302,14 @@ private:
-         virtual void binderDied(const wp<IBinder>& who);
-     };
- 
-+#ifdef STE_AUDIO
-+    struct NotificationClient : public RefBase {
-+        latency_update_callback mCb;
-+        void *mCookie;
-+        audio_io_handle_t mOutput;
-+    };
-+#endif
-+
-     static sp<AudioFlingerClient> gAudioFlingerClient;
-     static sp<AudioPolicyServiceClient> gAudioPolicyServiceClient;
-     friend class AudioFlingerClient;
-@@ -307,6 +332,12 @@ private:
-     // list of output descriptors containing cached parameters
-     // (sampling rate, framecount, channel count...)
-     static DefaultKeyedVector<audio_io_handle_t, OutputDescriptor *> gOutputs;
-+
-+#ifdef STE_AUDIO
-+    static Mutex gLatencyLock;
-+    static int gNextUniqueLatencyId;
-+    static DefaultKeyedVector<int, sp<AudioSystem::NotificationClient> > gLatencyNotificationClients;
-+#endif
- };
- 
- };  // namespace android
 diff --git a/frameworks/av/include/media/IAudioFlinger.h b/frameworks/av/include/media/IAudioFlinger.h
 index 282f275..4a36bab 100644
 --- a/frameworks/av/include/media/IAudioFlinger.h
@@ -387,58 +359,6 @@ index 666fafa..0a15c5b 100644
          return BAD_VALUE;
 diff --git a/frameworks/av/media/libmedia/AudioSystem.cpp b/frameworks/av/media/libmedia/AudioSystem.cpp
 index cc5b810..edc7f99 100644
---- a/frameworks/av/media/libmedia/AudioSystem.cpp
-+++ b/frameworks/av/media/libmedia/AudioSystem.cpp
-@@ -45,6 +45,12 @@ audio_format_t AudioSystem::gPrevInFormat = AUDIO_FORMAT_PCM_16_BIT;
- audio_channel_mask_t AudioSystem::gPrevInChannelMask = AUDIO_CHANNEL_IN_MONO;
- size_t AudioSystem::gInBuffSize = 0;
- 
-+#ifdef STE_AUDIO
-+// Clients for receiving latency update notifications
-+Mutex AudioSystem::gLatencyLock;
-+int AudioSystem::gNextUniqueLatencyId = 0;
-+DefaultKeyedVector<int, sp<AudioSystem::NotificationClient> > AudioSystem::gLatencyNotificationClients(0);
-+#endif
- 
- // establish binder interface to AudioFlinger service
- const sp<IAudioFlinger>& AudioSystem::get_audio_flinger()
-@@ -417,9 +423,36 @@ void AudioSystem::releaseAudioSessionId(int audioSession) {
-     }
- }
- 
-+#ifdef STE_AUDIO
-+int AudioSystem::registerLatencyNotificationClient(latency_update_callback cb,
-+        void *cookie, audio_io_handle_t output) {
-+    Mutex::Autolock _l(gLatencyLock);
-+
-+    sp<NotificationClient> notificationClient = new NotificationClient();
-+    notificationClient->mCb = cb;
-+    notificationClient->mCookie = cookie;
-+    notificationClient->mOutput = output;
-+
-+    gNextUniqueLatencyId++;
-+    gLatencyNotificationClients.add(gNextUniqueLatencyId, notificationClient);
-+    return gNextUniqueLatencyId;
-+}
-+
-+void AudioSystem::unregisterLatencyNotificationClient(int clientId) {
-+    Mutex::Autolock _l(gLatencyLock);
-+    gLatencyNotificationClients.removeItem(clientId);
-+}
-+#endif
-+
- // ---------------------------------------------------------------------------
- 
- void AudioSystem::AudioFlingerClient::binderDied(const wp<IBinder>& who) {
-+#ifdef STE_AUDIO
-+    gLatencyLock.lock();
-+    AudioSystem::gLatencyNotificationClients.clear();
-+    gLatencyLock.unlock();
-+#endif
-+
-     Mutex::Autolock _l(AudioSystem::gLock);
- 
-     AudioSystem::gAudioFlinger.clear();
 @@ -605,7 +654,11 @@ audio_io_handle_t AudioSystem::getOutput(audio_stream_type_t stream,
  {
      const sp<IAudioPolicyService>& aps = AudioSystem::get_audio_policy_service();
