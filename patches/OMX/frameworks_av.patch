@@ -91,20 +91,6 @@ index d521543..18cf771 100644
  private:
      DefaultKeyedVector<String8,String8>    mMap;
  };
-diff --git a/frameworks/av/include/media/AudioParameter.h b/frameworks/av/include/media/AudioParameter.h
-index 891bc4b..263ace7 100644
---- a/frameworks/av/include/media/AudioParameter.h
-+++ b/frameworks/av/include/media/AudioParameter.h
-@@ -48,6 +48,9 @@ public:
-     static const char * const keyFrameCount;
-     static const char * const keyInputSource;
-     static const char * const keyScreenState;
-+#ifdef STE_AUDIO
-+    static const char *keySinkLatency;
-+#endif
- 
-     String8 toString();
- 
 diff --git a/frameworks/av/include/media/AudioRecord.h b/frameworks/av/include/media/AudioRecord.h
 index 052064d..2251fa0 100644
 --- a/frameworks/av/include/media/AudioRecord.h
@@ -122,40 +108,6 @@ index 052064d..2251fa0 100644
      public:
 diff --git a/frameworks/av/include/media/AudioSystem.h b/frameworks/av/include/media/AudioSystem.h
 index 4c22412..270a92d 100644
---- a/frameworks/av/include/media/AudioSystem.h
-+++ b/frameworks/av/include/media/AudioSystem.h
-@@ -27,6 +27,9 @@
- namespace android {
- 
- typedef void (*audio_error_callback)(status_t err);
-+#ifdef STE_AUDIO
-+typedef void (*latency_update_callback)(void *cookie, audio_io_handle_t output, uint32_t sinkLatency);
-+#endif
- 
- class IAudioFlinger;
- class IAudioPolicyService;
-@@ -138,6 +141,11 @@ public:
-     static void acquireAudioSessionId(int audioSession);
-     static void releaseAudioSessionId(int audioSession);
- 
-+#ifdef STE_AUDIO
-+    static int registerLatencyNotificationClient(latency_update_callback cb, void *cookie, audio_io_handle_t output);
-+    static void unregisterLatencyNotificationClient(int clientId);
-+#endif
-+
-     // types of io configuration change events received with ioConfigChanged()
-     enum io_config_event {
-         OUTPUT_OPENED,
-@@ -147,6 +155,9 @@ public:
-         INPUT_CLOSED,
-         INPUT_CONFIG_CHANGED,
-         STREAM_CONFIG_CHANGED,
-+#ifdef STE_AUDIO
-+        SINK_LATENCY_CHANGED,
-+#endif
-         NUM_CONFIG_EVENTS
-     };
- 
 @@ -210,7 +221,13 @@ public:
                                      uint32_t samplingRate = 0,
                                      audio_format_t format = AUDIO_FORMAT_DEFAULT,
@@ -198,43 +150,6 @@ index 4c22412..270a92d 100644
  };
  
  };  // namespace android
-diff --git a/frameworks/av/include/media/AudioTrack.h b/frameworks/av/include/media/AudioTrack.h
-index f6646ab..85fd225 100644
---- a/frameworks/av/include/media/AudioTrack.h
-+++ b/frameworks/av/include/media/AudioTrack.h
-@@ -59,6 +59,9 @@ public:
-                                     // (See setPositionUpdatePeriod()).
-         EVENT_BUFFER_END = 5,       // Playback head is at the end of the buffer.
-                                     // Not currently used by android.media.AudioTrack.
-+#ifdef STE_AUDIO
-+        EVENT_LATENCY_CHANGED = 6,   // Audio sink latency has changed.
-+#endif
-         EVENT_NEW_IAUDIOTRACK = 6,  // IAudioTrack was re-created, either due to re-routing and
-                                     // voluntary invalidation by mediaserver, or mediaserver crash.
-         EVENT_STREAM_END = 7,       // Sent after all the buffers queued in AF and HW are played
-@@ -650,6 +653,11 @@ protected:
-             // FIXME enum is faster than strcmp() for parameter 'from'
-             status_t restoreTrack_l(const char *from);
- 
-+#ifdef STE_AUDIO
-+            static void LatencyCallback(void *cookie, audio_io_handle_t output,
-+                                 uint32_t sinkLatency);
-+#endif
-+
-             bool     isOffloaded() const
-                 { return (mFlags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD) != 0; }
- 
-@@ -729,6 +737,10 @@ protected:
-     int                     mPreviousPriority;          // before start()
-     SchedPolicy             mPreviousSchedulingGroup;
-     bool                    mAwaitBoost;    // thread should wait for priority boost before running
-+#ifdef STE_AUDIO
-+    int                     mLatencyClientId;
-+#endif
-+
- 
-     // The proxy should only be referenced while a lock is held because the proxy isn't
-     // multi-thread safe, especially the SingleStateQueue part of the proxy.
 diff --git a/frameworks/av/include/media/IAudioFlinger.h b/frameworks/av/include/media/IAudioFlinger.h
 index 282f275..4a36bab 100644
 --- a/frameworks/av/include/media/IAudioFlinger.h
@@ -383,20 +298,6 @@ index 2d033e6..ac970e7 100644
      volatile    int32_t     mFlags;         // combinations of CBLK_*
  
                  // Cache line boundary (32 bytes)
-diff --git a/frameworks/av/media/libmedia/AudioParameter.cpp b/frameworks/av/media/libmedia/AudioParameter.cpp
-index 33dbf0b..3f197a1 100644
---- a/frameworks/av/media/libmedia/AudioParameter.cpp
-+++ b/frameworks/av/media/libmedia/AudioParameter.cpp
-@@ -32,6 +32,9 @@ const char * const AudioParameter::keyChannels = AUDIO_PARAMETER_STREAM_CHANNELS
- const char * const AudioParameter::keyFrameCount = AUDIO_PARAMETER_STREAM_FRAME_COUNT;
- const char * const AudioParameter::keyInputSource = AUDIO_PARAMETER_STREAM_INPUT_SOURCE;
- const char * const AudioParameter::keyScreenState = AUDIO_PARAMETER_KEY_SCREEN_STATE;
-+#ifdef STE_AUDIO
-+const char *AudioParameter::keySinkLatency = "sink_latency";
-+#endif
- 
- AudioParameter::AudioParameter(const String8& keyValuePairs)
- {
 diff --git a/frameworks/av/media/libmedia/AudioRecord.cpp b/frameworks/av/media/libmedia/AudioRecord.cpp
 index 666fafa..0a15c5b 100644
 --- a/frameworks/av/media/libmedia/AudioRecord.cpp
@@ -538,29 +439,6 @@ index cc5b810..edc7f99 100644
      Mutex::Autolock _l(AudioSystem::gLock);
  
      AudioSystem::gAudioFlinger.clear();
-@@ -488,6 +521,22 @@ void AudioSystem::AudioFlingerClient::ioConfigChanged(int event, audio_io_handle
-         outputDesc =  new OutputDescriptor(*desc);
-         gOutputs.replaceValueFor(ioHandle, outputDesc);
-     } break;
-+#ifdef STE_AUDIO
-+    case SINK_LATENCY_CHANGED: {
-+        int sinkLatency = *((int*)param2);
-+        gLock.unlock();
-+        gLatencyLock.lock();
-+        size_t size = gLatencyNotificationClients.size();
-+        for (size_t i = 0; i < size; i++) {
-+            sp<NotificationClient> client = gLatencyNotificationClients.valueAt(i);
-+            if (client->mOutput == ioHandle) {
-+                (*client->mCb)(client->mCookie, ioHandle, sinkLatency);
-+            }
-+        }
-+        gLatencyLock.unlock();
-+        gLock.lock();
-+    } break;
-+#endif
-     case INPUT_OPENED:
-     case INPUT_CLOSED:
-     case INPUT_CONFIG_CHANGED:
 @@ -605,7 +654,11 @@ audio_io_handle_t AudioSystem::getOutput(audio_stream_type_t stream,
  {
      const sp<IAudioPolicyService>& aps = AudioSystem::get_audio_policy_service();
@@ -595,48 +473,6 @@ index cc5b810..edc7f99 100644
  }
  
  status_t AudioSystem::startInput(audio_io_handle_t input)
-diff --git a/frameworks/av/media/libmedia/AudioTrack.cpp b/frameworks/av/media/libmedia/AudioTrack.cpp
-index a9d6993..24a7eed 100644
---- a/frameworks/av/media/libmedia/AudioTrack.cpp
-+++ b/frameworks/av/media/libmedia/AudioTrack.cpp
-@@ -156,6 +156,9 @@ AudioTrack::~AudioTrack()
-         IPCThreadState::self()->flushCommands();
-         AudioSystem::releaseAudioSessionId(mSessionId);
-     }
-+#ifdef STE_AUDIO
-+        AudioSystem::unregisterLatencyNotificationClient(mLatencyClientId);
-+#endif
- }
- 
- status_t AudioTrack::set(
-@@ -1111,6 +1114,11 @@ status_t AudioTrack::obtainBuffer(Buffer* audioBuffer, int32_t waitCount)
-         audioBuffer->raw = NULL;
-         return INVALID_OPERATION;
-     }
-+#ifdef STE_AUDIO
-+    if (mLatencyClientId != -1) {
-+        AudioSystem::unregisterLatencyNotificationClient(mLatencyClientId);
-+    }
-+#endif
- 
-     const struct timespec *requested;
-     if (waitCount == -1) {
-@@ -1804,6 +1812,15 @@ uint32_t AudioTrack::getUnderrunFrames() const
-     return mProxy->getUnderrunFrames();
- }
- 
-+#ifdef STE_AUDIO
-+// static
-+void AudioTrack::LatencyCallback(void *cookie, audio_io_handle_t output, uint32_t sinkLatency)
-+{
-+    AudioTrack *me = static_cast<AudioTrack *>(cookie);
-+    me->mLatency = sinkLatency + (1000*me->mCblk->frameCount) / me->mCblk->sampleRate;
-+}
-+#endif
-+
- // =========================================================================
- 
- void AudioTrack::DeathNotifier::binderDied(const wp<IBinder>& who)
 diff --git a/frameworks/av/media/libmedia/IAudioFlinger.cpp b/frameworks/av/media/libmedia/IAudioFlinger.cpp
 index 86ff8bd..53de475 100644
 --- a/frameworks/av/media/libmedia/IAudioFlinger.cpp
@@ -1790,29 +1626,6 @@ diff --git a/frameworks/av/services/audioflinger/Threads.cpp b/frameworks/av/ser
 index 1da5147..ef51964 100644
 --- a/frameworks/av/services/audioflinger/Threads.cpp
 +++ b/frameworks/av/services/audioflinger/Threads.cpp
-@@ -1558,6 +1558,9 @@ void AudioFlinger::PlaybackThread::audioConfigChanged_l(int event, int param) {
-         break;
- 
-     case AudioSystem::STREAM_CONFIG_CHANGED:
-+#ifdef STE_AUDIO
-+    case AudioSystem::SINK_LATENCY_CHANGED:
-+#endif
-         param2 = &param;
-     case AudioSystem::OUTPUT_CLOSED:
-     default:
-@@ -3411,6 +3414,12 @@ bool AudioFlinger::MixerThread::checkForNewParameters_l()
-             }
-         }
- 
-+#ifdef STE_AUDIO
-+        if (param.getInt(String8(AudioParameter::keySinkLatency), value) == NO_ERROR) {
-+            sendIoConfigEvent_l(AudioSystem::SINK_LATENCY_CHANGED, value);
-+        }
-+#endif
-+
-         if (status == NO_ERROR) {
-             status = mOutput->stream->common.set_parameters(&mOutput->stream->common,
-                                                     keyValuePair.string());
 @@ -4372,7 +4381,12 @@ AudioFlinger::RecordThread::RecordThread(const sp<AudioFlinger>& audioFlinger,
                                           audio_channel_mask_t channelMask,
                                           audio_io_handle_t id,
