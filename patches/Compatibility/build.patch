@@ -1361,7 +1361,7 @@ index e3fe99c..50eae4f 100755
 
  echo "ro.build.id=$BUILD_ID"
 -echo "ro.build.display.id=$BUILD_DISPLAY_ID"
-+echo "ro.build.display.id=AOSX 4.4.2_r2 V0"
++echo "ro.build.display.id=AOSX 4.4.2_r2 V1"
  echo "ro.build.version.incremental=$BUILD_NUMBER"
  echo "ro.build.version.sdk=$PLATFORM_SDK_VERSION"
  echo "ro.build.version.codename=$PLATFORM_VERSION_CODENAME"
@@ -1382,8 +1382,8 @@ index e3fe99c..50eae4f 100755
  echo "# Do not try to parse ro.build.description or .fingerprint"
 -echo "ro.build.description=$PRIVATE_BUILD_DESC"
 -echo "ro.build.fingerprint=$BUILD_FINGERPRINT"
-+echo "ro.build.description=Android Open Source Xperia 4.4.2_r2 Ver 0"
-+echo "ro.build.fingerprint=AOSX-4.4.2_r2-V0"
++echo "ro.build.description=Android Open Source Xperia 4.4.2_r2 Ver 1"
++echo "ro.build.fingerprint=AOSX-4.4.2_r2-V1"
  echo "ro.build.characteristics=$TARGET_AAPT_CHARACTERISTICS"
 
  echo "# end build properties"
