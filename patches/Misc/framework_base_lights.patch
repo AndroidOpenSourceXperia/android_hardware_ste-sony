@@ -87,15 +87,28 @@ index 6d90973..58fad49 100644
    <java-symbol type="integer" name="config_shutdownBatteryTemperature" />
    <java-symbol type="integer" name="config_undockedHdmiRotation" />
    <java-symbol type="integer" name="config_virtualKeyQuietTimeMillis" />
+diff --git a/frameworks/base/services/java/com/android/server/power/DisplayPowerController.java b/frameworks/base/services/java/com/android/server/power/DisplayPowerController.java
+index 60d44c7..503bcae 100644
+--- a/frameworks/base/services/java/com/android/server/power/DisplayPowerController.java
++++ b/frameworks/base/services/java/com/android/server/power/DisplayPowerController.java
+@@ -775,6 +775,8 @@ final class DisplayPowerController {
+             if (on) {
+                 mNotifier.onScreenOn();
+             } else {
++				mLights.getLight(LightsService.LIGHT_ID_BUTTONS).setBrightness(0);
++				mLights.getLight(LightsService.LIGHT_ID_KEYBOARD).setBrightness(0);
+                 mNotifier.onScreenOff();
+             }
+         }
 diff --git a/frameworks/base/services/java/com/android/server/power/PowerManagerService.java b/frameworks/base/services/java/com/android/server/power/PowerManagerService.java
-index da9548f..90949af 100644
+index da9548f..2ae2b44 100644
 --- a/frameworks/base/services/java/com/android/server/power/PowerManagerService.java
 +++ b/frameworks/base/services/java/com/android/server/power/PowerManagerService.java
 @@ -149,6 +149,7 @@ public final class PowerManagerService extends IPowerManager.Stub
      // This is subtracted from the end of the screen off timeout so the
      // minimum screen off timeout should be longer than this.
      private static final int SCREEN_DIM_DURATION = 7 * 1000;
-+    private static final int DEFAULT_BUTTON_ON_DURATION = 1 * 1000;
++    private static final int DEFAULT_BUTTON_ON_DURATION = 5 * 1000;
  
      // The maximum screen dim time expressed as a ratio relative to the screen
      // off timeout.  If the screen off timeout is very short then we want the
@@ -114,12 +127,10 @@ index da9548f..90949af 100644
  
      private final Object mLock = new Object();
  
-@@ -348,7 +357,12 @@ public final class PowerManagerService extends IPowerManager.Stub
-     // to allow the current foreground activity to override the brightness.
+@@ -349,6 +358,11 @@ public final class PowerManagerService extends IPowerManager.Stub
      // Use -1 to disable.
      private int mScreenBrightnessOverrideFromWindowManager = -1;
--
-+
+ 
 +    // The button brightness setting override from the window manager
 +    // to allow the current foreground activity to override the button brightness.
 +    // Use -1 to disable.
@@ -189,12 +200,10 @@ index da9548f..90949af 100644
          mDirty |= DIRTY_SETTINGS;
      }
  
-@@ -940,7 +980,22 @@ public final class PowerManagerService extends IPowerManager.Stub
-         }
+@@ -941,6 +981,21 @@ public final class PowerManagerService extends IPowerManager.Stub
          return false;
      }
--
-+
+ 
 +    public void setKeyboardVisibility(boolean visible) {
 +        synchronized (mLock) {
 +            if (DEBUG_SPEW) {
