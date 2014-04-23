@@ -1,0 +1,217 @@
+diff --git a/packages/apps/Settings/src/com/android/settings/location/LocationEnabler.java b/packages/apps/Settings/src/com/android/settings/location/LocationEnabler.java
+new file mode 100644
+--- /dev/null
++++ b/packages/apps/Settings/src/com/android/settings/location/LocationEnabler.java
+@@ -0,0 +1,82 @@
++/*
++ * Copyright (C) 2013 The CyanogenMod Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.location;
++
++import android.content.Context;
++import android.provider.Settings;
++import android.util.Log;
++import android.widget.CompoundButton;
++import android.widget.Switch;
++
++public class LocationEnabler implements CompoundButton.OnCheckedChangeListener  {
++    private static final String TAG = "LocationEnabler";
++    private final Context mContext;
++    private Switch mSwitch;
++    private boolean mStateMachineEvent;
++
++    public LocationEnabler(Context context, Switch switch_) {
++        mContext = context;
++        mSwitch = switch_;
++    }
++
++    public void resume() {
++        mSwitch.setOnCheckedChangeListener(this);
++        setSwitchState();
++    }
++
++    public void pause() {
++        mSwitch.setOnCheckedChangeListener(null);
++    }
++
++    public void setSwitch(Switch switch_) {
++        if (mSwitch == switch_) return;
++        mSwitch.setOnCheckedChangeListener(null);
++        mSwitch = switch_;
++        mSwitch.setOnCheckedChangeListener(this);
++        setSwitchState();
++    }
++
++    private void setSwitchState() {
++        int mode = Settings.Secure.getInt(mContext.getContentResolver(),
++                Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF);
++        mStateMachineEvent = true;
++        mSwitch.setChecked(mode != Settings.Secure.LOCATION_MODE_OFF);
++        mStateMachineEvent = false;
++    }
++
++    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
++        if (mStateMachineEvent) {
++            return;
++        }
++        // Handle a switch change
++        if (LocationSettingsBase.isRestricted(mContext)) {
++            // Location toggling disabled by user restriction. Read the current location mode to
++            // update the location master switch.
++            if (Log.isLoggable(TAG, Log.INFO)) {
++                Log.i(TAG, "Restricted user, not setting location mode");
++            }
++            return;
++        }
++
++        int currentMode = Settings.Secure.getInt(mContext.getContentResolver(),
++                Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF);
++        int newMode = isChecked ? Settings.Secure.LOCATION_MODE_HIGH_ACCURACY
++                : Settings.Secure.LOCATION_MODE_OFF;
++        LocationSettingsBase.sendModeChangingIntent(mContext, currentMode, newMode);
++    }
++
++}
+diff --git a/packages/apps/Settings/src/com/android/settings/Settings.java b/packages/apps/Settings/src/com/android/settings/Settings.java
+index 663d278..1e88e9e 100644
+--- a/packages/apps/Settings/src/com/android/settings/Settings.java
++++ b/packages/apps/Settings/src/com/android/settings/Settings.java
+@@ -78,6 +78,7 @@ import com.android.settings.inputmethod.InputMethodAndLanguageSettings;
+ import com.android.settings.inputmethod.KeyboardLayoutPickerFragment;
+ import com.android.settings.inputmethod.SpellCheckersSettings;
+ import com.android.settings.inputmethod.UserDictionaryList;
++import com.android.settings.location.LocationEnabler;
+ import com.android.settings.location.LocationSettings;
+ import com.android.settings.nfc.AndroidBeam;
+ import com.android.settings.nfc.PaymentSettings;
+@@ -780,6 +781,7 @@ public class Settings extends PreferenceActivity
+ 
+         private final WifiEnabler mWifiEnabler;
+         private final BluetoothEnabler mBluetoothEnabler;
++        private final LocationEnabler mLocationEnabler;
+         private AuthenticatorHelper mAuthHelper;
+         private DevicePolicyManager mDevicePolicyManager;
+ 
+@@ -797,7 +799,9 @@ public class Settings extends PreferenceActivity
+         static int getHeaderType(Header header) {
+             if (header.fragment == null && header.intent == null) {
+                 return HEADER_TYPE_CATEGORY;
+-            } else if (header.id == R.id.wifi_settings || header.id == R.id.bluetooth_settings) {
++            } else if (header.id == R.id.wifi_settings 
++                    || header.id == R.id.bluetooth_settings
++                    || header.id == R.id.location_settings) {
+                 return HEADER_TYPE_SWITCH;
+             } else if (header.id == R.id.security_settings) {
+                 return HEADER_TYPE_BUTTON;
+@@ -843,6 +847,7 @@ public class Settings extends PreferenceActivity
+             // Switches inflated from their layouts. Must be done before adapter is set in super
+             mWifiEnabler = new WifiEnabler(context, new Switch(context));
+             mBluetoothEnabler = new BluetoothEnabler(context, new Switch(context));
++            mLocationEnabler = new LocationEnabler(context, new Switch(context));
+             mDevicePolicyManager = dpm;
+         }
+ 
+@@ -912,8 +917,10 @@ public class Settings extends PreferenceActivity
+                     // Would need a different treatment if the main menu had more switches
+                     if (header.id == R.id.wifi_settings) {
+                         mWifiEnabler.setSwitch(holder.switch_);
+-                    } else {
++                    } else if (header.id == R.id.bluetooth_settings){
+                         mBluetoothEnabler.setSwitch(holder.switch_);
++                    } else if (header.id == R.id.location_settings) {
++                        mLocationEnabler.setSwitch(holder.switch_);
+                     }
+                     updateCommonHeaderView(header, holder);
+                     break;
+@@ -987,11 +994,13 @@ public class Settings extends PreferenceActivity
+         public void resume() {
+             mWifiEnabler.resume();
+             mBluetoothEnabler.resume();
++            mLocationEnabler.resume();
+         }
+ 
+         public void pause() {
+             mWifiEnabler.pause();
+             mBluetoothEnabler.pause();
++            mLocationEnabler.pause();
+         }
+     }
+ 
+diff --git a/packages/apps/Settings/src/com/android/settings/location/LocationSettings.java b/packages/apps/Settings/src/com/android/settings/location/LocationSettings.java
+index 06a6650..276dc96 100644
+--- a/packages/apps/Settings/src/com/android/settings/location/LocationSettings.java
++++ b/packages/apps/Settings/src/com/android/settings/location/LocationSettings.java
+@@ -184,6 +184,7 @@ public class LocationSettings extends LocationSettingsBase
+                     Log.d(TAG, "Received settings change intent: " + intent);
+                 }
+                 injector.reloadStatusMessages();
++                refreshLocationMode();
+             }
+         };
+ 
+diff --git a/packages/apps/Settings/src/com/android/settings/location/LocationSettingsBase.java b/packages/apps/Settings/src/com/android/settings/location/LocationSettingsBase.java
+index 86c2ee5..c160833 100644
+--- a/packages/apps/Settings/src/com/android/settings/location/LocationSettingsBase.java
++++ b/packages/apps/Settings/src/com/android/settings/location/LocationSettingsBase.java
+@@ -71,13 +71,13 @@ public abstract class LocationSettingsBase extends SettingsPreferenceFragment
+     /** Called when location mode has changed. */
+     public abstract void onModeChanged(int mode, boolean restricted);
+ 
+-    private boolean isRestricted() {
+-        final UserManager um = (UserManager) getActivity().getSystemService(Context.USER_SERVICE);
++    protected static boolean isRestricted(Context context) {
++        final UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
+         return um.hasUserRestriction(UserManager.DISALLOW_SHARE_LOCATION);
+     }
+ 
+     public void setLocationMode(int mode) {
+-        if (isRestricted()) {
++        if (isRestricted(getActivity())) {
+             // Location toggling disabled by user restriction. Read the current location mode to
+             // update the location master switch.
+             if (Log.isLoggable(TAG, Log.INFO)) {
+@@ -90,20 +90,25 @@ public abstract class LocationSettingsBase extends SettingsPreferenceFragment
+             }
+             return;
+         }
+-        Intent intent = new Intent(MODE_CHANGING_ACTION);
+-        intent.putExtra(CURRENT_MODE_KEY, mCurrentMode);
+-        intent.putExtra(NEW_MODE_KEY, mode);
+-        getActivity().sendBroadcast(intent, android.Manifest.permission.WRITE_SECURE_SETTINGS);
+-        Settings.Secure.putInt(getContentResolver(), Settings.Secure.LOCATION_MODE, mode);
++        sendModeChangingIntent(getActivity(), mCurrentMode, mode);
+         refreshLocationMode();
+     }
+ 
++    protected static void sendModeChangingIntent(Context context, int oldState, int newState) {
++        Intent intent = new Intent(MODE_CHANGING_ACTION);
++        intent.putExtra(CURRENT_MODE_KEY, oldState);
++        intent.putExtra(NEW_MODE_KEY, newState);
++        context.sendBroadcast(intent, android.Manifest.permission.WRITE_SECURE_SETTINGS);
++        Settings.Secure.putInt(context.getContentResolver(),
++                Settings.Secure.LOCATION_MODE, newState);
++    }
++
+     public void refreshLocationMode() {
+         if (mActive) {
+             int mode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE,
+                     Settings.Secure.LOCATION_MODE_OFF);
+             mCurrentMode = mode;
+-            onModeChanged(mode, isRestricted());
++            onModeChanged(mode, isRestricted(getActivity()));
+         }
+     }
+ 
