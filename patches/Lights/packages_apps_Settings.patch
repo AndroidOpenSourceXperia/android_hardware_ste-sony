@@ -48,7 +48,7 @@ index 7772b7c..a6486a2 100644
  
 +    private PreferenceScreen mNotificationPulse;
 +    private PreferenceScreen mBatteryPulse;
-+ 
++
      private final Configuration mCurConfig = new Configuration();
      
      private ListPreference mScreenTimeoutPreference;
