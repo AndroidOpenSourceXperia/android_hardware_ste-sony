@@ -1,8 +1,8 @@
 diff --git a/bootable/recovery/Android.mk b/bootable/recovery/Android.mk
-index 98c4427..5a9a1a2 100644
+index d8c880e..c08d2ec 100644
 --- a/bootable/recovery/Android.mk
 +++ b/bootable/recovery/Android.mk
-@@ -44,6 +44,19 @@ RECOVERY_API_VERSION := 3
+@@ -45,6 +45,19 @@ RECOVERY_API_VERSION := 3
  RECOVERY_FSTAB_VERSION := 2
  LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
  
@@ -23,10 +23,10 @@ index 98c4427..5a9a1a2 100644
  #    libext4_utils_static \
  #    libsparse_static \
 diff --git a/bootable/recovery/data.cpp b/bootable/recovery/data.cpp
-index c9628a4..e414853 100644
+index 7be0b03..8fbbc2c 100644
 --- a/bootable/recovery/data.cpp
 +++ b/bootable/recovery/data.cpp
-@@ -50,6 +50,10 @@
+@@ -51,6 +51,10 @@
  	#include "cutils/properties.h"
  #endif
  
@@ -37,7 +37,7 @@ index c9628a4..e414853 100644
  extern "C"
  {
  	#include "twcommon.h"
-@@ -1010,7 +1014,12 @@ int DataManager::GetMagicValue(const string varName, string& value)
+@@ -1027,7 +1031,12 @@ int DataManager::GetMagicValue(const string varName, string& value)
  			capacity_file += "/capacity";
  			FILE * cap = fopen(capacity_file.c_str(),"rt");
  #else
@@ -50,7 +50,7 @@ index c9628a4..e414853 100644
  #endif
  			if (cap){
  				fgets(cap_s, 4, cap);
-@@ -1024,7 +1033,12 @@ int DataManager::GetMagicValue(const string varName, string& value)
+@@ -1041,7 +1050,12 @@ int DataManager::GetMagicValue(const string varName, string& value)
  			status_file += "/status";
  			cap = fopen(status_file.c_str(),"rt");
  #else
@@ -63,7 +63,7 @@ index c9628a4..e414853 100644
  #endif
  			if (cap) {
  				fgets(cap_s, 2, cap);
-@@ -1035,6 +1049,22 @@ int DataManager::GetMagicValue(const string varName, string& value)
+@@ -1052,6 +1066,22 @@ int DataManager::GetMagicValue(const string varName, string& value)
  					charging = ' ';
  			}
  			nextSecCheck = curTime.tv_sec + 60;
@@ -86,8 +86,236 @@ index c9628a4..e414853 100644
  		}
  
  		sprintf(tmp, "%i%%%c", lastVal, charging);
+diff --git a/bootable/recovery/gui/devices/320x480/res/ui.xml b/bootable/recovery/gui/devices/320x480/res/ui.xml
+index cf17d1a..d5624d1 100644
+--- a/bootable/recovery/gui/devices/320x480/res/ui.xml
++++ b/bootable/recovery/gui/devices/320x480/res/ui.xml
+@@ -2170,7 +2170,7 @@
+ 				<font resource="font" color="%button_text_color%" />
+ 				<text>Mount USB Storage</text>
+ 				<image resource="main_button" />
+-				<action function="page">usb_mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 
+ 			<object type="button">
+@@ -2199,6 +2199,53 @@
+ 			<object type="template" name="footer" />
+ 		</page>
+ 
++		<page name="select_usb_storage">
++			<object type="template" name="header" />
++
++			<object type="text" color="%text_color%">
++				<font resource="font" />
++				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
++				<text>Select USB Storage To Mount</text>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<placement x="%col1_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>Internal Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=internal</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<condition var1="tw_has_dual_storage" var2="1" />
++				<placement x="%col2_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>External Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=external</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="action">
++				<touch key="home" />
++				<action function="page">main</action>
++			</object>
++
++			<object type="action">
++				<touch key="back" />
++				<action function="page">mount</action>
++			</object>
++
++			<object type="template" name="footer" />
++		</page>
++		
+ 		<page name="usb_mount">
+ 			<object type="template" name="header" />
+ 
+@@ -2242,7 +2289,7 @@
+ 			</object>
+ 
+ 			<object type="action">
+-				<action function="page">mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 		</page>
+ 
+diff --git a/bootable/recovery/gui/devices/480x854/res/ui.xml b/bootable/recovery/gui/devices/480x854/res/ui.xml
+index 330f939..244f607 100644
+--- a/bootable/recovery/gui/devices/480x854/res/ui.xml
++++ b/bootable/recovery/gui/devices/480x854/res/ui.xml
+@@ -2169,7 +2169,7 @@
+ 				<font resource="font" color="%button_text_color%" />
+ 				<text>Mount USB Storage</text>
+ 				<image resource="main_button" />
+-				<action function="page">usb_mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 
+ 			<object type="button">
+@@ -2198,6 +2198,53 @@
+ 			<object type="template" name="footer" />
+ 		</page>
+ 
++		<page name="select_usb_storage">
++			<object type="template" name="header" />
++
++			<object type="text" color="%text_color%">
++				<font resource="font" />
++				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
++				<text>Select USB Storage To Mount</text>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<placement x="%col1_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>Internal Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=internal</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<condition var1="tw_has_dual_storage" var2="1" />
++				<placement x="%col2_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>External Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=external</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="action">
++				<touch key="home" />
++				<action function="page">main</action>
++			</object>
++
++			<object type="action">
++				<touch key="back" />
++				<action function="page">mount</action>
++			</object>
++
++			<object type="template" name="footer" />
++		</page>
++
+ 		<page name="usb_mount">
+ 			<object type="template" name="header" />
+ 
+@@ -2241,7 +2288,7 @@
+ 			</object>
+ 
+ 			<object type="action">
+-				<action function="page">mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 		</page>
+ 
+diff --git a/bootable/recovery/gui/devices/540x960/res/ui.xml b/bootable/recovery/gui/devices/540x960/res/ui.xml
+index 75262bb..0f401ee 100644
+--- a/bootable/recovery/gui/devices/540x960/res/ui.xml
++++ b/bootable/recovery/gui/devices/540x960/res/ui.xml
+@@ -2170,7 +2170,7 @@
+ 				<font resource="font" color="%button_text_color%" />
+ 				<text>Mount USB Storage</text>
+ 				<image resource="main_button" />
+-				<action function="page">usb_mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 
+ 			<object type="button">
+@@ -2199,6 +2199,53 @@
+ 			<object type="template" name="footer" />
+ 		</page>
+ 
++		<page name="select_usb_storage">
++			<object type="template" name="header" />
++
++			<object type="text" color="%text_color%">
++				<font resource="font" />
++				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
++				<text>Select USB Storage To Mount</text>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<placement x="%col1_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>Internal Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=internal</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="button">
++				<highlight color="%highlight_color%" />
++				<condition var1="tw_has_dual_storage" var2="1" />
++				<placement x="%col2_x%" y="%row3_y%" />
++				<font resource="font" color="%button_text_color%" />
++				<text>External Storage</text>
++				<image resource="main_button" />
++				<actions>
++					<action function="set">storage_selected=external</action>
++					<action function="page">usb_mount</action>
++				</actions>
++			</object>
++
++			<object type="action">
++				<touch key="home" />
++				<action function="page">main</action>
++			</object>
++
++			<object type="action">
++				<touch key="back" />
++				<action function="page">mount</action>
++			</object>
++
++			<object type="template" name="footer" />
++		</page>
++
+ 		<page name="usb_mount">
+ 			<object type="template" name="header" />
+ 
+@@ -2242,7 +2289,7 @@
+ 			</object>
+ 
+ 			<object type="action">
+-				<action function="page">mount</action>
++				<action function="page">select_usb_storage</action>
+ 			</object>
+ 		</page>
+ 
 diff --git a/bootable/recovery/minuitwrp/events.c b/bootable/recovery/minuitwrp/events.c
-index 93c41f2..772ad2a 100644
+index eb14907..3951983 100644
 --- a/bootable/recovery/minuitwrp/events.c
 +++ b/bootable/recovery/minuitwrp/events.c
 @@ -168,7 +168,13 @@ static int vk_init(struct ev *e)
@@ -104,18 +332,69 @@ index 93c41f2..772ad2a 100644
      {
          e->ignored = 1;
      }
+diff --git a/bootable/recovery/partitionmanager.cpp b/bootable/recovery/partitionmanager.cpp
+index b947d43..155e418 100644
+--- a/bootable/recovery/partitionmanager.cpp
++++ b/bootable/recovery/partitionmanager.cpp
+@@ -1570,6 +1570,38 @@ int TWPartitionManager::Open_Lun_File(string Partition_Path, string Lun_File) {
+ 	return true;
+ }
+ 
++#ifdef XPERIA_TWRP_TOUCH
++int TWPartitionManager::usb_storage_enable(void) {
++	string selected_storage, storage_path;
++	char lun_file[255];
++	string Lun_File_str = CUSTOM_LUN_FILE;
++	size_t found = Lun_File_str.find("%");
++
++	if (found != string::npos) {
++		sprintf(lun_file, CUSTOM_LUN_FILE, 0);
++	}
++
++	DataManager::GetValue("storage_selected", selected_storage);
++
++	if (selected_storage == "internal") {
++		gui_print("Internal Storage Selected For Mounting\n");
++		DataManager::GetValue(TW_INTERNAL_PATH, storage_path);
++		if (!Open_Lun_File(storage_path, lun_file)) {
++			gui_print("Unable to mount internal storage\n");
++			return false;
++		}
++	} else if (selected_storage == "external") {
++		gui_print("External Storage Selected For Mounting\n");
++		DataManager::GetValue(TW_EXTERNAL_PATH, storage_path);
++		if (!Open_Lun_File(storage_path, lun_file)) {
++			gui_print("Unable to mount external storage. Please check if it's inserted.\n");
++			return false;
++		}
++	}
++	property_set("sys.storage.ums_enabled", "1");
++	return true;
++}
++#else
+ int TWPartitionManager::usb_storage_enable(void) {
+ 	int has_dual, has_data_media;
+ 	char lun_file[255];
+@@ -1620,6 +1652,7 @@ int TWPartitionManager::usb_storage_enable(void) {
+ 	property_set("sys.storage.ums_enabled", "1");
+ 	return true;
+ }
++#endif
+ 
+ int TWPartitionManager::usb_storage_disable(void) {
+ 	int index, ret;
 diff --git a/bootable/recovery/twrp.cpp b/bootable/recovery/twrp.cpp
-index ec87dd5..20b226b 100644
+index ec87dd5..9f6eef6 100644
 --- a/bootable/recovery/twrp.cpp
 +++ b/bootable/recovery/twrp.cpp
 @@ -81,6 +81,11 @@ int main(int argc, char **argv) {
  	time_t StartupTime = time(NULL);
  	printf("Starting TWRP %s on %s", TW_VERSION_STR, ctime(&StartupTime));
  
-+	gui_print("================================\n");
++	gui_print("\n==================================\n");
 +	gui_print("Team Win Recovery Project v%s\n", TW_VERSION_STR);
-+	gui_print("Modified by NoobCoder(Agontuk)\n");
-+	gui_print("================================\n\n");
++	gui_print("Modified & Ported by Agontuk\n");
++	gui_print("==================================\n\n");
 +
  	// Load default values to set DataManager constants and handle ifdefs
  	DataManager::SetDefaultValues();
@@ -152,4 +431,3 @@ index 0000000..6d4929e
 +#endif /* XPERIA_P */
 +
 +#endif
-
