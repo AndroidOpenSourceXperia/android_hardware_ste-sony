@@ -110,7 +110,7 @@ index 7772b7c..a6486a2 100644
 +        updateLightPulseSummary();
 +        updateBatteryPulseSummary();
      }
- 
+
      private void updateScreenSaverSummary() {
 @@ -267,6 +288,28 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
          }
