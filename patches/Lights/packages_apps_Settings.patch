@@ -50,7 +50,7 @@ index 7772b7c..a6486a2 100644
 +    private PreferenceScreen mBatteryPulse;
 +
      private final Configuration mCurConfig = new Configuration();
-     
+ 
      private ListPreference mScreenTimeoutPreference;
 @@ -77,6 +84,7 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
      public void onCreate(Bundle savedInstanceState) {
@@ -110,7 +110,7 @@ index 7772b7c..a6486a2 100644
 +        updateLightPulseSummary();
 +        updateBatteryPulseSummary();
      }
-
+ 
      private void updateScreenSaverSummary() {
 @@ -267,6 +288,28 @@ public class DisplaySettings extends SettingsPreferenceFragment implements
          }
