@@ -127,4 +127,3 @@ index 8744328..56671e7 100644
      <!-- Date & Time -->
      <header
          android:id="@+id/date_time_settings"
-

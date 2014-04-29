@@ -149,7 +149,7 @@ index cf17d1a..d5624d1 100644
 +
 +			<object type="template" name="footer" />
 +		</page>
-+		
++
  		<page name="usb_mount">
  			<object type="template" name="header" />
  
