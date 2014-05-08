@@ -22,7 +22,7 @@ PRODUCT_PACKAGES += \
 
 # External
 PRODUCT_PACKAGES += \
-   libhealthd \
+   libhealthd.montblanc \
    memtrack.montblanc
 
 
