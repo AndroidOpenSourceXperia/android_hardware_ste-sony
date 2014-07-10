@@ -22,7 +22,8 @@ PRODUCT_PACKAGES += \
 
 # External
 PRODUCT_PACKAGES += \
-   libhealthd.montblanc \
    memtrack.montblanc
+
+BOARD_HAL_STATIC_LIBRARIES := libhealthd.montblanc
 
 
