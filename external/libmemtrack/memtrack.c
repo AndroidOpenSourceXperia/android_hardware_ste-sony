@@ -22,7 +22,7 @@ int memtrack_init(const struct memtrack_module *module)
     return 0;
 }
 
-int msm_memtrack_get_memory(const struct memtrack_module *module)
+int memtrack_get_memory(const struct memtrack_module *module)
 {
 	return 0;
 }
