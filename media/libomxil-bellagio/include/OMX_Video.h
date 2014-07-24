@@ -68,9 +68,11 @@ typedef enum OMX_VIDEO_CODINGTYPE {
     OMX_VIDEO_CodingRV,         /**< all versions of Real Video */
     OMX_VIDEO_CodingAVC,        /**< H.264/AVC */
     OMX_VIDEO_CodingMJPEG,      /**< Motion JPEG */
+    OMX_VIDEO_CodingVP8,        /**< Google VP8, formerly known as On2 VP8 */
+    OMX_VIDEO_CodingVP9,        /**< Google VP9 */
     OMX_VIDEO_CodingKhronosExtensions = 0x6F000000, /**< Reserved region for introducing Khronos Standard Extensions */ 
     OMX_VIDEO_CodingVendorStartUnused = 0x7F000000, /**< Reserved region for introducing Vendor Extensions */
-	OMX_VIDEO_CodingVC1,        /**< VC1 */
+    OMX_VIDEO_CodingVC1,        /**< VC1 */
     OMX_VIDEO_CodingFLV1,       /**< Sorenson's H.263 */
     OMX_VIDEO_CodingDIVX,       /**< DIVX */
     OMX_VIDEO_CodingHEVC,       /**< HEVC */
