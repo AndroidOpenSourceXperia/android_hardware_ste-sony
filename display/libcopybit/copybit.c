@@ -129,30 +129,26 @@ static enum blt_fmt to_blt_fmt(int copybit_format)
     case COPYBIT_FORMAT_RGBA_8888:
     case COPYBIT_FORMAT_RGBX_8888:
         return BLT_FMT_32_BIT_ABGR8888;
+        
     case COPYBIT_FORMAT_BGRA_8888:
         return BLT_FMT_32_BIT_ARGB8888;
+        
     case COPYBIT_FORMAT_RGB_565:
         return BLT_FMT_16_BIT_RGB565;
+        
     case COPYBIT_FORMAT_YCbCr_422_SP:
         return BLT_FMT_YUV422_PACKED_SEMI_PLANAR;
-    case COPYBIT_FORMAT_YCbCr_420_SP:
-        return BLT_FMT_YUV420_PACKED_SEMI_PLANAR;
+        
     case COPYBIT_FORMAT_YCBCR42XMBN:
         return BLT_FMT_YUV420_PACKED_SEMIPLANAR_MB_STE;
-    case COPYBIT_FORMAT_YCbCr_422_P:
-        return BLT_FMT_YUV422_PACKED_PLANAR;
-    case COPYBIT_FORMAT_YCbCr_420_P:
-        return BLT_FMT_YUV420_PACKED_PLANAR;
+;
     case COPYBIT_FORMAT_YCbCr_422_I:
 	return BLT_FMT_CB_Y_CR_Y;
-    case COPYBIT_FORMAT_YCrCb_422_SP:
-        return BLT_FMT_YVU422_PACKED_SEMI_PLANAR;
+	
+
     case COPYBIT_FORMAT_YCrCb_420_SP:
         return BLT_FMT_YVU420_PACKED_SEMI_PLANAR;
-    case COPYBIT_FORMAT_YCrCb_422_P:
-        return BLT_FMT_YVU422_PACKED_PLANAR;
-    case COPYBIT_FORMAT_YCrCb_420_P:
-        return BLT_FMT_YVU420_PACKED_PLANAR;
+
     default:
         return BLT_FMT_UNUSED;
     }
@@ -622,13 +618,7 @@ static int copybit_stretch(struct copybit_device_t *dev,
     /* If the source format is RGBX or destination format is YUV we shouldn't do any blending */
     if (src->format == COPYBIT_FORMAT_RGBX_8888 ||
         dst->format == COPYBIT_FORMAT_YCbCr_422_SP ||
-        dst->format == COPYBIT_FORMAT_YCbCr_420_SP ||
-        dst->format == COPYBIT_FORMAT_YCbCr_422_P  ||
-        dst->format == COPYBIT_FORMAT_YCbCr_420_P  ||
-        dst->format == COPYBIT_FORMAT_YCrCb_422_SP ||
         dst->format == COPYBIT_FORMAT_YCrCb_420_SP ||
-        dst->format == COPYBIT_FORMAT_YCrCb_422_P  ||
-        dst->format == COPYBIT_FORMAT_YCrCb_420_P  ||
         dst->format == COPYBIT_FORMAT_YCBCR42XMBN) {
         context->blt_req.flags &= ~(BLT_FLAG_PER_PIXEL_ALPHA_BLEND |
                                     BLT_FLAG_SRC_IS_NOT_PREMULT);

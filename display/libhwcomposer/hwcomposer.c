@@ -524,16 +524,9 @@ static bool bufferIsYUV(const struct gralloc_module_t *gralloc,
     switch (format) {
     case HAL_PIXEL_FORMAT_YV12:
     case HAL_PIXEL_FORMAT_YCbCr_422_SP:
-    case HAL_PIXEL_FORMAT_YCbCr_420_SP:
-    case HAL_PIXEL_FORMAT_YCbCr_422_P:
-    case HAL_PIXEL_FORMAT_YCbCr_420_P:
     case HAL_PIXEL_FORMAT_YCrCb_420_SP:
-    case HAL_PIXEL_FORMAT_YCrCb_422_SP:
-    case HAL_PIXEL_FORMAT_YCrCb_422_P:
-    case HAL_PIXEL_FORMAT_YCrCb_420_P:
     case HAL_PIXEL_FORMAT_YCBCR42XMBN:
     case HAL_PIXEL_FORMAT_YCbCr_422_I:
-    case HAL_PIXEL_FORMAT_CbYCrY_422_I:
         ret = true;
         break;
     default:
