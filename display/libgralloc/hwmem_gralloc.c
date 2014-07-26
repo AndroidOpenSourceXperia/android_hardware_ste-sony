@@ -1242,24 +1242,13 @@ static int get_format_bpp(int format, int* bpp)
             break;
 
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
         case HAL_PIXEL_FORMAT_YCbCr_422_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_422_P:
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
-        case HAL_PIXEL_FORMAT_CbYCrY_422_I:
-        case HAL_PIXEL_FORMAT_YCrCb_422_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_422_P:
             *bpp = 16;
             break;
 
         case HAL_PIXEL_FORMAT_YCBCR42XMBN: /* Interpreted as HAL_PIXEL_FORMAT_YCBCR420MBN */
-        case HAL_PIXEL_FORMAT_YCbCr_420_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_420_P:
-        case HAL_PIXEL_FORMAT_YCbCr_420_I:
-        case HAL_PIXEL_FORMAT_CbYCrY_420_I:
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_420_P:
         case HAL_PIXEL_FORMAT_YV12:
             *bpp = 12;
             break;
@@ -1282,8 +1271,6 @@ static int is_non_planar_and_independent_pixel_format(int format)
         case HAL_PIXEL_FORMAT_BGRA_8888:
         case HAL_PIXEL_FORMAT_RGB_888:
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
             return 1;
     }
 
@@ -1312,30 +1299,17 @@ static int get_format_width_and_height_alignment(int format, int usage,
             break;
 
         case HAL_PIXEL_FORMAT_YCbCr_422_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_422_P:
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
-        case HAL_PIXEL_FORMAT_CbYCrY_422_I:
-        case HAL_PIXEL_FORMAT_YCrCb_422_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_422_P:
             *width_alignment = 2;
             *height_alignment = 1;
             break;
 
-        case HAL_PIXEL_FORMAT_YCbCr_420_SP_TILED:
-        case HAL_PIXEL_FORMAT_YCbCr_420_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_420_P:
-        case HAL_PIXEL_FORMAT_YCbCr_420_I:
-        case HAL_PIXEL_FORMAT_YCrCb_420_SP_TILED:
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_420_P:
-        case HAL_PIXEL_FORMAT_CbYCrY_420_I:
             *width_alignment = 2;
             *height_alignment = 2;
             break;
 
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
             if (usage & (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_RENDER))
                 *width_alignment = 4;
             else
