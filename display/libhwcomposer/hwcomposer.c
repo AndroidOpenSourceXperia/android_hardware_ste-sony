@@ -194,13 +194,7 @@ static int get_stride(uint32_t width, int hal_format)
             break;
         case HAL_PIXEL_FORMAT_YV12:
         case HAL_PIXEL_FORMAT_YCbCr_422_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_420_SP:
-        case HAL_PIXEL_FORMAT_YCbCr_422_P:
-        case HAL_PIXEL_FORMAT_YCbCr_420_P:
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_422_SP:
-        case HAL_PIXEL_FORMAT_YCrCb_422_P:
-        case HAL_PIXEL_FORMAT_YCrCb_420_P:
             stride = width;
             break;
         case HAL_PIXEL_FORMAT_YCBCR42XMBN:
@@ -209,7 +203,6 @@ static int get_stride(uint32_t width, int hal_format)
                 stride += 16 - (width % 16);
             break;
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
-        case HAL_PIXEL_FORMAT_CbYCrY_422_I:
             stride = width * 2;
             break;
         default:
@@ -230,26 +223,28 @@ static enum compdev_fmt to_compdev_format(int hal_format)
     switch (hal_format) {
         case HAL_PIXEL_FORMAT_RGBA_8888:
             return COMPDEV_FMT_RGBA8888;
+            
         case HAL_PIXEL_FORMAT_RGBX_8888:
             return COMPDEV_FMT_RGBX8888;
+            
         case HAL_PIXEL_FORMAT_RGB_888:
             return COMPDEV_FMT_RGB888;
+            
         case HAL_PIXEL_FORMAT_RGB_565:
             return COMPDEV_FMT_RGB565;
+            
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
             return COMPDEV_FMT_YUV422;
+            
         case HAL_PIXEL_FORMAT_YCBCR42XMBN:
             return COMPDEV_FMT_YCBCR42XMBN;
+            
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
             return COMPDEV_FMT_YVU420_SP;
-        case HAL_PIXEL_FORMAT_YCbCr_420_SP:
-            return COMPDEV_FMT_YUV420_SP;
+   
         case HAL_PIXEL_FORMAT_YV12:
             return COMPDEV_FMT_YV12;
-        case HAL_PIXEL_FORMAT_YCrCb_420_P:
-            return COMPDEV_FMT_YVU420_P;
-        case HAL_PIXEL_FORMAT_YCbCr_420_P:
-            return COMPDEV_FMT_YUV420_P;
+        
         default:
             ALOGE("%s: Compdev format not found %d", __func__, hal_format);
             return (enum compdev_fmt)0;
