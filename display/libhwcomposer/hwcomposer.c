@@ -6,7 +6,7 @@
 #define LOG_TAG "STE-HWComposer"
 
 #include <hardware/hardware.h>
-#include "hwcomposer.h"
+#include <hardware/hwcomposer.h>
 #include <cutils/log.h>
 #include <stdbool.h>
 #include <sys/types.h>
