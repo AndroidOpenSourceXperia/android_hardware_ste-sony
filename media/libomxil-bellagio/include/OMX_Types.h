@@ -53,7 +53,8 @@ extern "C" {
 #      ifdef __OMX_EXPORTS
 #          define OMX_API __declspec(dllexport)
 #      else
-#          define OMX_API __declspec(dllimport)
+//#          define OMX_API __declspec(dllimport)
+#define OMX_API
 #      endif
 #   else
 #      ifdef __OMX_EXPORTS

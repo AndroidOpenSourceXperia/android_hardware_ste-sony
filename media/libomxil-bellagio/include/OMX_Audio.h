@@ -89,6 +89,7 @@ typedef enum OMX_AUDIO_CODINGTYPE {
     OMX_AUDIO_CodingWMA,         /**< Any variant of WMA encoded data */
     OMX_AUDIO_CodingRA,          /**< Any variant of RA encoded data */
     OMX_AUDIO_CodingMIDI,        /**< Any variant of MIDI encoded data */
+    OMX_AUDIO_CodingFLAC,        /**< Any variant of FLAC encoded data */
     OMX_AUDIO_CodingKhronosExtensions = 0x6F000000, /**< Reserved region for introducing Khronos Standard Extensions */ 
     OMX_AUDIO_CodingVendorStartUnused = 0x7F000000, /**< Reserved region for introducing Vendor Extensions */
 	OMX_AUDIO_CodingMP2,         /**< Any variant of MP2 encoded data */
@@ -249,6 +250,7 @@ typedef enum OMX_AUDIO_AACPROFILETYPE{
   OMX_AUDIO_AACObjectERLC = 17,     /**< ER AAC Low Complexity object (Error Resilient AAC-LC) */
   OMX_AUDIO_AACObjectLD = 23,       /**< AAC Low Delay object (Error Resilient) */
   OMX_AUDIO_AACObjectHE_PS = 29,    /**< AAC High Efficiency with Parametric Stereo coding (HE-AAC v2, object type PS) */
+  OMX_AUDIO_AACObjectELD = 39,      /** AAC Enhanced Low Delay. NOTE: Pending Khronos standardization **/
   OMX_AUDIO_AACObjectKhronosExtensions = 0x6F000000, /**< Reserved region for introducing Khronos Standard Extensions */ 
   OMX_AUDIO_AACObjectVendorStartUnused = 0x7F000000, /**< Reserved region for introducing Vendor Extensions */
   OMX_AUDIO_AACObjectMax = 0x7FFFFFFF
@@ -326,6 +328,18 @@ typedef struct OMX_AUDIO_PARAM_VORBISTYPE {
                                    non-stereo streams). Useful for lower-bitrate encoding. */     
 } OMX_AUDIO_PARAM_VORBISTYPE;
 
+/** FLAC params */
+typedef struct OMX_AUDIO_PARAM_FLACTYPE {
+    OMX_U32 nSize;            /**< size of the structure in bytes */
+    OMX_VERSIONTYPE nVersion; /**< OMX specification version information */
+    OMX_U32 nPortIndex;       /**< port that this structure applies to */
+    OMX_U32 nChannels;        /**< Number of channels */
+    OMX_U32 nSampleRate;      /**< Sampling rate of the source data.  Use 0 for
+                                   unknown sampling rate. */
+    OMX_U32 nCompressionLevel;/**< FLAC compression level, from 0 (fastest compression)
+                                   to 8 (highest compression */
+    OMX_U32 nBitsPerSample;   /**< Number of bits in each sample */
+} OMX_AUDIO_PARAM_FLACTYPE;
 /** MP2 params */
 typedef struct OMX_AUDIO_PARAM_MP2TYPE {
     OMX_U32 nSize;                 /**< size of the structure in bytes */
