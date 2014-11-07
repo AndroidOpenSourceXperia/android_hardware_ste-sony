@@ -24,7 +24,7 @@
 
 
 // for access to PMEM driver ioctls and structures
-#include <linux/android_pmem.h>
+#include "../android_pmem.h"
 #include <linux/fb.h>
 
 #include <cutils/log.h>

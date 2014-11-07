@@ -37,7 +37,7 @@
 #include "hwmem_gralloc.h"
 
 #if HAVE_ANDROID_OS
-#include <linux/android_pmem.h>
+#include "../android_pmem.h"
 #endif
 
 
