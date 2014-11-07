@@ -1242,8 +1242,6 @@ static int get_format_bpp(int format, int* bpp)
             break;
 
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
         case HAL_PIXEL_FORMAT_YCbCr_422_SP:
         case HAL_PIXEL_FORMAT_YCbCr_422_P:
         case HAL_PIXEL_FORMAT_YCbCr_422_I:
@@ -1282,8 +1280,6 @@ static int is_non_planar_and_independent_pixel_format(int format)
         case HAL_PIXEL_FORMAT_BGRA_8888:
         case HAL_PIXEL_FORMAT_RGB_888:
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
             return 1;
     }
 
@@ -1334,8 +1330,6 @@ static int get_format_width_and_height_alignment(int format, int usage,
             break;
 
         case HAL_PIXEL_FORMAT_RGB_565:
-        case HAL_PIXEL_FORMAT_RGBA_5551:
-        case HAL_PIXEL_FORMAT_RGBA_4444:
             if (usage & (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_RENDER))
                 *width_alignment = 4;
             else
