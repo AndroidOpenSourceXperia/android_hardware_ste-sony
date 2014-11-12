@@ -17,8 +17,7 @@ PRODUCT_PACKAGES += \
 
 # WLAN
 PRODUCT_PACKAGES += \
-   libnetcmdiface \
-   iw
+   libnetcmdiface 
 
 # External
 PRODUCT_PACKAGES += \
